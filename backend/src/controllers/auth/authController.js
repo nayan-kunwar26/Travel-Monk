@@ -5,19 +5,19 @@ import { generateSignUpToken } from "../../utils/generateSignUpToken.js";
 import { sendMail } from "../../utils/Mail/sendMail.js";
 import bcrypt from "bcrypt";
 
-
 //SignUp controller
 export const signUp = asyncHandler(async (req, res, next) => {
-  const { name, email, password } = req?.body;
+  const { email } = req?.body;
+  console.log(`email: ${email}`)
   const existingUser = await User.findOne({ email });
   if (existingUser) return next(new ErrorResponse("User already exists!", 400));
 
-  const signUpToken = generateSignUpToken({ name, email, password });
-  const verificationUrl = `http://localhost:5000/api/v1/mail/verifySignupToken/${signUpToken}`;
+  const signUpToken = generateSignUpToken(email);
+  const verificationUrl = `http://localhost:5000/api/v1/mail/verifySignupToken/?signUpToken${signUpToken}`;
 
   sendMail(email, verificationUrl)
     .then(() => {
-      return res 
+      return res
         .status(200)
         .json({ success: true, message: "Mail sent successfully" });
     })
@@ -73,13 +73,14 @@ export const login = asyncHandler(async (req, res, next) => {
       expires: "15d",
     })
     .status(200)
-    .json({ status: true, message: "Logged in successfully!!" });
+    .json({ success: true, message: "Logged in successfully!!" });
 });
 
 //Logout controller
 export const logout = asyncHandler((req, res, next) => {
   res
-    .cookie("access-token", "", { expiresIn: "0d" })
+    .cookie("access-token", "", { maxAge: 0 })
+    .cookie("refresh-token", "", { maxAge: 0 })
     .status(200)
-    .json({ status: true, message: "Logout successfully!!" });
+    .json({ success: true, message: "Logout successfully!!" });
 });

@@ -1,8 +1,11 @@
 import jwt from "jsonwebtoken";
 
 export const generateSignUpToken = (payload) => {
-  const token = jwt.sign({ payload }, process.env.JWT_SECRET_KEY, {
-    expiresIn: "5m",
+  const email = payload;
+  console.log(`email: ${email}`);
+  const token = jwt.sign({ email }, process.env.JWT_SECRET_KEY, {
+    expiresIn: "15m",
   });
-  return token;
+  console.log(`token: ${token}`);
+  return token; 
 };
