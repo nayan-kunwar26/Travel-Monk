@@ -1,4 +1,5 @@
 import express from "express";
+import path from "path";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
@@ -8,6 +9,9 @@ import mailRoutes from "./src/routes/mail/mailRoutes.js";
 
 dotenv.config();
 const app = express();
+
+app.set("view engine", "ejs");
+app.set("views", path.resolve("./views"));
 
 const PORT = process.env.PORT || 8000;
 

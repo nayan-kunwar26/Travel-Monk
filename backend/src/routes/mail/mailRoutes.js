@@ -3,6 +3,6 @@ import { verifySignUpToken } from "../../controllers/mail/mailRoutes.js";
 
 const router = express.Router();
 
-router.route("/verifySignupToken").post(verifySignUpToken);
+router.route("/verifySignupToken/:token").get(verifySignUpToken);
 
 export default router;

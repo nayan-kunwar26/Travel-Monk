@@ -5,9 +5,10 @@ import ErrorResponse from "../../utils/errors/errorResponse.js";
 
 export const verifySignUpToken = asyncHandler(async (req, res, next) => {
   try {
-    const { name, password, confirmPassword } = req.body;
+    //const { name, password, confirmPassword } = req.body;
 
-    const { token } = req.query;
+    //const { token } = req.query;
+     const { token } = req.params;
     console.log(`token: ${token}`);
 
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET_KEY);

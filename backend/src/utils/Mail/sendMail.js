@@ -1,7 +1,14 @@
 import nodemailer from "nodemailer";
+import ejs from "ejs";
+import path from "path";
 
 // Function to send an email
-export const sendMail = (email, verificationUrl) => {
+export const sendMail = async (email, verificationUrl) => {
+  // Define the path to the EJS template
+  const templatePath = path.join(__dirname, "../../../views/verifyToken.ejs");
+
+  // Render the EJS template with the verification URL
+  const html = await ejs.renderFile(templatePath, { verificationUrl });
   // Create a transporter object using the default SMTP transport
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -18,7 +25,7 @@ export const sendMail = (email, verificationUrl) => {
     from: process.env.NODEMAILER_EMAIL_USER,
     to: email,
     subject: "From Travel Monk",
-    html: `<h2>Verify your email address</h2> <p>You created an account with the email address: ${email} Click on  <a href="${verificationUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px;">Confirm Email</a> to verify the email address and unlock your full account.</p>`,
+    html,
   };
 
   return new Promise((resolve, reject) => {
