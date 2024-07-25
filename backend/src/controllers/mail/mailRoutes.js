@@ -5,28 +5,20 @@ import ErrorResponse from "../../utils/errors/errorResponse.js";
 
 export const verifySignUpToken = asyncHandler(async (req, res, next) => {
   try {
-    //const { name, password, confirmPassword } = req.body;
-
-    //const { token } = req.query;
-     const { token } = req.params;
+    const { token } = req.params;
     console.log(`token: ${token}`);
 
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    
+
     if (!decodedToken) {
       return next(
         new ErrorResponse("Email is not verified or Invalid token", 400)
       );
     }
-    const { email } = decodedToken;
-    //console.log(`mailRoutes email: ${email}`);
-
+    const { email, password } = decodedToken;
     let user = new User({
-      name,
       email,
       password,
-      confirmPassword,
-      isVerified: true,
     });
 
     await user.save();

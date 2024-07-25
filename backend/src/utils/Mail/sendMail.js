@@ -1,9 +1,12 @@
 import nodemailer from "nodemailer";
 import ejs from "ejs";
 import path from "path";
+import { fileURLToPath } from "url";
 
 // Function to send an email
 export const sendMail = async (email, verificationUrl) => {
+  const __fileName = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__fileName);
   // Define the path to the EJS template
   const templatePath = path.join(__dirname, "../../../views/verifyToken.ejs");
 
@@ -24,7 +27,7 @@ export const sendMail = async (email, verificationUrl) => {
   let mailOptions = {
     from: process.env.NODEMAILER_EMAIL_USER,
     to: email,
-    subject: "From Travel Monk",
+    subject: "Travel Monk",
     html,
   };
 

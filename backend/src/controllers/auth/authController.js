@@ -4,16 +4,16 @@ import ErrorResponse from "../../utils/errors/errorResponse.js";
 import { generateSignUpToken } from "../../utils/generateSignUpToken.js";
 import { sendMail } from "../../utils/Mail/sendMail.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 //SignUp controller
 export const signUp = asyncHandler(async (req, res, next) => {
-  const { email } = req?.body;
-  console.log(`email: ${email}`)
+  const { email, password } = req?.body;
   const existingUser = await User.findOne({ email });
   if (existingUser) return next(new ErrorResponse("User already exists!", 400));
 
-  const signUpToken = generateSignUpToken(email);
-  const verificationUrl = `http://localhost:5000/api/v1/mail/verifySignupToken/?signUpToken${signUpToken}`;
+  const signUpToken = generateSignUpToken({ email, password });
+  const verificationUrl = `http://localhost:5000/api/v1/mail/verifySignupToken/${signUpToken}`;
 
   sendMail(email, verificationUrl)
     .then(() => {
@@ -32,7 +32,7 @@ export const signUp = asyncHandler(async (req, res, next) => {
 // Login controller
 export const login = asyncHandler(async (req, res, next) => {
   const { email, password } = req?.body;
-  const existingUser = await auth.findOne({ email });
+  const existingUser = await User.findOne({ email });
 
   if (!existingUser) return next(new ErrorResponse("No user found!!", 400));
 
@@ -51,6 +51,7 @@ export const login = asyncHandler(async (req, res, next) => {
       expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
     }
   );
+  console.log(`accessToken: ${accessToken}`);
 
   // Generate Refresh Token
   const refreshToken = jwt.sign(
@@ -60,17 +61,18 @@ export const login = asyncHandler(async (req, res, next) => {
       expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
     }
   );
+  console.log(`refreshToken: ${refreshToken}`);
 
   res
     .cookie("access-token", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENVIRONMENT == "production",
-      expires: "15m",
+      expires: new Date(Date.now() + 15 * 60 * 1000), //15m
     })
     .cookie("refresh-token", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENVIRONMENT == "production",
-      expires: "15d",
+      expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), //15d
     })
     .status(200)
     .json({ success: true, message: "Logged in successfully!!" });
