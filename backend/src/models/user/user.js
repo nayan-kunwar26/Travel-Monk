@@ -33,7 +33,7 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Pre-save hook to validate password and confirmPassword
+// Pre-save hook to hash password before saving it to DB
 UserSchema.pre("save", async function (next) {
   const user = this;
   if (!user.isModified("password")) return next();
