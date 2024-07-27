@@ -17,9 +17,11 @@ export const signUp = asyncHandler(async (req, res, next) => {
 
   sendMail(email, verificationUrl)
     .then(() => {
-      return res
-        .status(200)
-        .json({ success: true, message: "Mail sent successfully" });
+      return res.status(200).json({
+        success: true,
+        message:
+          "Mail sent successfully. Please check your email, including the spam or junk folder and follow the instructions to verify your email address and finish setting up your account.",
+      });
     })
     .catch((error) => {
       res.status(400).json({
