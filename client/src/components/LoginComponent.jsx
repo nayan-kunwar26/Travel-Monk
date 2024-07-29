@@ -1,7 +1,23 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useLogin } from "../hooks/useLogin";
 
 const LoginComponent = () => {
+  const [inputs, setInputs] = useState({
+    email: "",
+    password: "",
+  });
+  const login = useLogin();
+  const onSubmitHandler = async (e) => {
+    e.preventDefault();
+    try {
+      const data = await login(inputs);
+    } catch (error) {
+      console.error("Login failed", error);
+    }
+  };
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
@@ -11,7 +27,7 @@ const LoginComponent = () => {
       </div>
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form className="space-y-6">
+        <form onSubmit={onSubmitHandler} className="space-y-6">
           <div>
             <label
               htmlFor="email"
@@ -22,7 +38,10 @@ const LoginComponent = () => {
             <div className="mt-2">
               <input
                 type="email"
-                value=""
+                value={inputs.email}
+                onChange={(e) =>
+                  setInputs({ ...inputs, email: e.target.value })
+                }
                 required
                 autoComplete="email"
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -50,7 +69,10 @@ const LoginComponent = () => {
             <div className="mt-2">
               <input
                 type="password"
-                value=""
+                value={inputs.password}
+                onChange={(e) =>
+                  setInputs({ ...inputs, password: e.target.value })
+                }
                 required
                 autoComplete="current-password"
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"

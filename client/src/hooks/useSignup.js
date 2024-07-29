@@ -1,21 +1,14 @@
-import axios from "axios";
+import apiClient from "../services/apiClient";
 
 export const useSignup = () => {
   const signup = async ({ email, password }) => {
     console.log(`email: ${email}, password: ${password}`);
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/signup`,
-        {
-          email,
-          password,
-        },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      const data = res.data;
+      const response = await apiClient.post("/api/v1/auth/signup", {
+        email,
+        password,
+      });
+      const data = response.data;
       console.log(`data: ${JSON.stringify(data)}`);
       if (data.error) {
         throw new Error(data.error);

@@ -1,5 +1,6 @@
 import React from "react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useSignup } from "../hooks/useSignup";
 
@@ -90,6 +91,15 @@ const SignupComponent = () => {
             >
               Sign in
             </button>
+            <p>
+             Already have an account?{" "}
+              <Link
+                to="/login"
+                className="font-semibold text-cyan-600 hover:text-cyan-500"
+              >
+                Login
+              </Link>
+            </p>
           </div>
         </form>
       </div>
