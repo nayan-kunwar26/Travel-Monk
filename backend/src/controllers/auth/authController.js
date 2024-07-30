@@ -59,9 +59,14 @@ export const login = asyncHandler(async (req, res, next) => {
 
 //Logout controller
 export const logout = asyncHandler((req, res, next) => {
-  res
-    .cookie("access-token", "", { maxAge: 0 })
-    .cookie("refresh-token", "", { maxAge: 0 })
-    .status(200)
-    .json({ success: true, message: "Logout successfully!!" });
+  try {
+    res
+      .cookie("access-token", "", { maxAge: 0 })
+      .cookie("refresh-token", "", { maxAge: 0 })
+      .status(200)
+      .json({ success: true, message: "Logout successfully!" });
+  } catch (error) {
+    console.log(`Error in logout: ${error.message}`);
+    return next(new ErrorResponse("Error in logout", 500));
+  }
 });
