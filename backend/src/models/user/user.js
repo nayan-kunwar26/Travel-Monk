@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
-const UserSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -34,7 +35,7 @@ const UserSchema = new mongoose.Schema(
 );
 
 // Pre-save hook to hash password before saving it to DB
-UserSchema.pre("save", async function (next) {
+userSchema.pre("save", async function (next) {
   const user = this;
   if (!user.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
@@ -42,6 +43,38 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-const User = mongoose.model("User", UserSchema);
+userSchema.methods.isPasswordCorrect = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
+
+//Generate Access Token
+userSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+      email: this.email,
+      name: this.name,
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+    }
+  );
+};
+
+//Generate Refresh Token
+userSchema.methods.generateRefreshToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+    }
+  );
+};
+
+const User = mongoose.model("User", userSchema);
 
 export default User;

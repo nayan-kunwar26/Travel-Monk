@@ -9,11 +9,16 @@ const LoginComponent = () => {
     email: "",
     password: "",
   });
+  const navigate = useNavigate();
   const login = useLogin();
+  
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     try {
       const data = await login(inputs);
+      if (data.success) {
+        navigate("/");
+      }
     } catch (error) {
       console.error("Login failed", error);
     }
@@ -31,7 +36,7 @@ const LoginComponent = () => {
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium leading-6 text-gray-900"
+              className="block text-sm font-medium leading-6 text-gray-700"
             >
               Email address
             </label>
@@ -44,7 +49,7 @@ const LoginComponent = () => {
                 }
                 required
                 autoComplete="email"
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="w-full mt-2 p-2 border rounded-lg focus:outline-none focus:border-gray-400"
               />
             </div>
           </div>
@@ -53,14 +58,14 @@ const LoginComponent = () => {
             <div className="flex items-center justify-between">
               <label
                 htmlFor="password"
-                className="block text-sm font-medium leading-6 text-gray-900"
+                className="block text-sm font-medium leading-6 text-gray-700"
               >
                 Password
               </label>
               <div className="text-sm">
                 <a
                   href="#"
-                  className="font-semibold text-cyan-600 hover:text-cyan-500"
+                  className="font-semibold text-[#007e8f] hover:text-[#009CB0]"
                 >
                   Forgot password?
                 </a>
@@ -75,7 +80,7 @@ const LoginComponent = () => {
                 }
                 required
                 autoComplete="current-password"
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="w-full mt-2 p-2 border rounded-lg focus:outline-none focus:border-gray-400"
               />
             </div>
           </div>
@@ -83,7 +88,7 @@ const LoginComponent = () => {
           <div>
             <button
               type="submit"
-              className="flex w-full justify-center rounded-md bg-cyan-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className="flex w-full justify-center rounded-md bg-[#007e8f] px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-[#009CB0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
               Log in
             </button>
@@ -91,7 +96,7 @@ const LoginComponent = () => {
               Don't have an account?{" "}
               <Link
                 to="/signup"
-                className="font-semibold text-cyan-600 hover:text-cyan-500"
+                className="font-semibold text-[#007e8f] hover:text-[#009CB0]"
               >
                 Sign up
               </Link>
