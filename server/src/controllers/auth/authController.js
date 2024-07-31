@@ -10,7 +10,7 @@ import { COOKIE_OPTIONS } from "../../../constants.js";
 export const signUp = asyncHandler(async (req, res, next) => {
   const { email, password } = req?.body;
 
-  if (!email | !password) {
+  if (!email || !password) {
     return next(new ErrorResponse("All fields are required", 400));
   }
 
@@ -20,7 +20,7 @@ export const signUp = asyncHandler(async (req, res, next) => {
   const signUpToken = generateSignUpToken({ email, password });
   const verificationUrl = `http://localhost:5000/api/v1/mail/verifySignupToken/${signUpToken}`;
 
-  sendMail(email, verificationUrl)
+  sendMail(email, "From Travel Monk", verificationUrl)
     .then(() => {
       return res.status(200).json({
         success: true,
