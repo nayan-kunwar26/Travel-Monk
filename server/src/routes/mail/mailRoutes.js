@@ -1,5 +1,5 @@
 import express from "express";
-import { verifySignUpToken } from "../../controllers/mail/mailRoutes.js";
+import { verifySignUpToken } from "../../controllers/mail/mailController.js";
 
 const router = express.Router();
 

@@ -1,17 +1,17 @@
 import User from "../../models/user/user.js";
 import { asyncHandler } from "../../utils/errors/asyncHandler.js";
-import ErrorResponse from "../../utils/errors/errorResponse.js";
+import ApiErrorResponse from "../../utils/errors/ApiErrorResponse.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 
-export const forgotPassword = asyncHandler(async (req, res) => {
+export const forgotPassword = asyncHandler(async (req, res, next) => {
   const { email } = req.body;
   if (!email) {
-    return next(new ErrorResponse("Email is required", 400));
+    return next(new ApiErrorResponse("Email is required", 400));
   }
 
   const existingUser = await User.findOne({ email });
-  if (!existingUser) return next(new ErrorResponse("No user found!!", 400));
+  if (!existingUser) return next(new ApiErrorResponse("No user found!!", 400));
   const resetToken = jwt.sign(
     { userId: existingUser._id, email },
     process.env.JWT_SECRET_KEY,
@@ -49,4 +49,26 @@ export const forgotPassword = asyncHandler(async (req, res) => {
         .json({ message: "Password reset mail sent successfuly" });
     }
   });
+});
+
+export const resetPassword = asyncHandler(async (req, res, next) => {
+  const { password } = req.body;
+  const { token } = req.params;
+  if (!password) {
+    return next(new ApiErrorResponse("Password is required!", 400));
+  }
+  const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+  if (!decoded) {
+    return next(new ApiErrorResponse("Invalid token!", 400));
+  }
+
+  const user = await User.findById(decoded.userId);
+  if (!user) {
+    return next(new ApiErrorResponse("User not found!", 401));
+  }
+  user.password = password;
+  await user.save();
+  return res
+    .status(200)
+    .json({ success: true, message: "Password reset successfully." });
 });

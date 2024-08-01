@@ -1,6 +1,6 @@
 import User from "../../models/user/user.js";
 import { asyncHandler } from "../../utils/errors/asyncHandler.js";
-import ErrorResponse from "../../utils/errors/errorResponse.js";
+import ApiErrorResponse from "../../utils/errors/ApiErrorResponse.js";
 import { generateSignUpToken } from "../../utils/generateSignUpToken.js";
 import { sendMail } from "../../utils/Mail/sendMail.js";
 import bcrypt from "bcrypt";
@@ -11,11 +11,12 @@ export const signUp = asyncHandler(async (req, res, next) => {
   const { email, password } = req?.body;
 
   if (!email || !password) {
-    return next(new ErrorResponse("All fields are required", 400));
+    return next(new ApiErrorResponse("All fields are required", 400));
   }
 
   const existingUser = await User.findOne({ email });
-  if (existingUser) return next(new ErrorResponse("User already exists!", 400));
+  if (existingUser)
+    return next(new ApiErrorResponse("User already exists!", 400));
 
   const signUpToken = generateSignUpToken({ email, password });
   const verificationUrl = `http://localhost:5000/api/v1/mail/verifySignupToken/${signUpToken}`;
@@ -41,11 +42,12 @@ export const login = asyncHandler(async (req, res, next) => {
   const { email, password } = req?.body;
   const existingUser = await User.findOne({ email });
 
-  if (!existingUser) return next(new ErrorResponse("No user found!!", 400));
+  if (!existingUser) return next(new ApiErrorResponse("No user found!!", 400));
 
-  const isValidPassword = existingUser.isPasswordCorrect(password);
+  const isValidPassword = await existingUser.isPasswordCorrect(password);
 
-  if (!isValidPassword) return next(new ErrorResponse("Wrong password!!", 400));
+  if (!isValidPassword)
+    return next(new ApiErrorResponse("Wrong password!!", 400));
 
   const refresh_token = existingUser.generateRefreshToken();
   const access_token = existingUser.generateAccessToken();
@@ -67,6 +69,6 @@ export const logout = asyncHandler((req, res, next) => {
       .json({ success: true, message: "Logout successfully!" });
   } catch (error) {
     console.log(`Error in logout: ${error.message}`);
-    return next(new ErrorResponse("Error in logout", 500));
+    return next(new ApiErrorResponse("Error in logout", 500));
   }
 });
