@@ -1,6 +1,8 @@
 import { combineReducers } from "@reduxjs/toolkit";
-
-const reducers = combineReducers({});
+import { authReducer } from "../features/slices/Auth/authSlice.js";
+const reducers = combineReducers({
+  auth: authReducer,
+});
 
 const rootReducer = (state, action) => {
   return reducers(state, action);

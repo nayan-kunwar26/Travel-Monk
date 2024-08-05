@@ -4,6 +4,7 @@ import ApiErrorResponse from "../../utils/errors/ApiErrorResponse.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 
+//Forgot Password Controller
 export const forgotPassword = asyncHandler(async (req, res, next) => {
   const { email } = req.body;
   if (!email) {
@@ -28,11 +29,10 @@ export const forgotPassword = asyncHandler(async (req, res, next) => {
     service: "gmail",
     auth: {
       user: process.env.NODEMAILER_EMAIL_USER,
-      pass: process.env.NODEMAILER_EMAIL_PASS, // App-specific password generated from Google Account
+      pass: process.env.NODEMAILER_EMAIL_PASS, 
     },
   });
 
-  // Define email options
   let mailOptions = {
     from: process.env.NODEMAILER_EMAIL_USER,
     to: email,
@@ -51,6 +51,7 @@ export const forgotPassword = asyncHandler(async (req, res, next) => {
   });
 });
 
+//Reset Password Controller
 export const resetPassword = asyncHandler(async (req, res, next) => {
   const { password } = req.body;
   const { token } = req.params;
