@@ -4,6 +4,7 @@ import ApiErrorResponse from "../../utils/errors/ApiErrorResponse.js";
 import { generateSignUpToken } from "../../utils/generateSignUpToken.js";
 import { sendMail } from "../../utils/Mail/sendMail.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { COOKIE_OPTIONS } from "../../../constants.js";
 
 //SignUp controller
@@ -37,6 +38,34 @@ export const signUp = asyncHandler(async (req, res, next) => {
     });
 });
 
+// Verify Singup Token controller
+export const verifySignUpToken = asyncHandler(async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    console.log(`token: ${token}`);
+
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    if (!decodedToken) {
+      return next(
+        new ApiErrorResponse("Email is not verified or Invalid token", 400)
+      );
+    }
+    const { email, password } = decodedToken;
+    let user = new User({
+      email,
+      password,
+    });
+
+    await user.save();
+    res
+      .status(200)
+      .json({ success: true, message: "Email verified successfully" });
+  } catch (error) {
+    next(new ApiErrorResponse(`Internal Server Error! ${error.message}`, 500));
+  }
+});
+
 // Login controller
 export const login = asyncHandler(async (req, res, next) => {
   const { email, password } = req?.body;
@@ -52,19 +81,33 @@ export const login = asyncHandler(async (req, res, next) => {
   const refresh_token = existingUser.generateRefreshToken();
   const access_token = existingUser.generateAccessToken();
 
+  existingUser.refreshToken = refresh_token;
+  await existingUser.save({ validateBeforeSave: false });
+
   res
-    .cookie("access_token", refresh_token, COOKIE_OPTIONS)
-    .cookie("refresh_token", access_token, COOKIE_OPTIONS)
+    .cookie("access_token", refresh_token, {
+      ...COOKIE_OPTIONS,
+      expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
+    })
+    .cookie("refresh_token", access_token, {
+      ...COOKIE_OPTIONS,
+      expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+    })
     .status(200)
     .json({ success: true, message: "Logged in successfully." });
 });
 
 //Logout controller
-export const logout = asyncHandler((req, res, next) => {
+export const logout = asyncHandler(async (req, res, next) => {
   try {
+    await User.findByIdAndUpdate(
+      req.user._id,
+      { $unset: { refreshToken: 1 } },
+      { new: true }
+    );
     res
-      .cookie("access-token", "", { maxAge: 0 })
-      .cookie("refresh-token", "", { maxAge: 0 })
+      .cookie("access-token", "", { ...COOKIE_OPTIONS, maxAge: 0 })
+      .cookie("refresh-token", "", { ...COOKIE_OPTIONS, maxAge: 0 })
       .status(200)
       .json({ success: true, message: "Logout successfully!" });
   } catch (error) {
