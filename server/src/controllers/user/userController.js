@@ -3,6 +3,47 @@ import { asyncHandler } from "../../utils/errors/asyncHandler.js";
 import ApiErrorResponse from "../../utils/errors/ApiErrorResponse.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import { COOKIE_OPTIONS } from "../../../constants.js";
+
+//Controller for refreshing Access token
+export const refreshAccessToken = asyncHandler(async (req, res, next) => {
+  const clientRefreshToken = req.cookies.refresh_token;
+  if (!clientRefreshToken) {
+    return next(new ApiErrorResponse("Unauthorized Request", 401));
+  }
+
+  const decoded = jwt.verify(
+    clientRefreshToken,
+    process.env.REFRESH_TOKEN_SECRET
+  );
+
+  if (!decoded) {
+    return next(new ApiErrorResponse("Invalid refresh token", 401));
+  }
+
+  const user = await User.findById(decoded._id);
+  if (!user || clientRefreshToken !== user.refreshToken) {
+    return next(new ApiErrorResponse("Refresh token is expired", 401));
+  }
+
+  const access_token = user.generateAccessToken();
+  const refresh_token = user.generateRefreshToken();
+
+  user.refreshToken = refresh_token;
+  await user.save({validateBeforeSave: false});
+
+  return res
+    .status(200)
+    .cookie("access_token", access_token, {
+      ...COOKIE_OPTIONS,
+      expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // 1day set to 15 min later
+    })
+    .cookie("refresh_token", refresh_token, {
+      ...COOKIE_OPTIONS,
+      expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15day
+    })
+    .json({ access_token, refresh_token });
+});
 
 //Forgot Password Controller
 export const forgotPassword = asyncHandler(async (req, res, next) => {
@@ -29,7 +70,7 @@ export const forgotPassword = asyncHandler(async (req, res, next) => {
     service: "gmail",
     auth: {
       user: process.env.NODEMAILER_EMAIL_USER,
-      pass: process.env.NODEMAILER_EMAIL_PASS, 
+      pass: process.env.NODEMAILER_EMAIL_PASS,
     },
   });
 

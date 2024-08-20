@@ -3,12 +3,11 @@ import { asyncHandler } from "../../utils/errors/asyncHandler.js";
 import ApiErrorResponse from "../../utils/errors/ApiErrorResponse.js";
 import { generateSignUpToken } from "../../utils/generateSignUpToken.js";
 import { sendMail } from "../../utils/Mail/sendMail.js";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { COOKIE_OPTIONS } from "../../../constants.js";
 
 //SignUp controller
-export const signUp = asyncHandler(async (req, res, next) => {
+export const signup = asyncHandler(async (req, res, next) => {
   const { email, password } = req?.body;
 
   if (!email || !password) {
@@ -19,15 +18,14 @@ export const signUp = asyncHandler(async (req, res, next) => {
   if (existingUser)
     return next(new ApiErrorResponse("User already exists!", 400));
 
-  const signUpToken = generateSignUpToken({ email, password });
-  const verificationUrl = `http://localhost:5000/api/v1/mail/verifySignupToken/${signUpToken}`;
+  const signUptoken = generateSignUpToken({ email, password });
+  const verificationUrl = `http://localhost:5000/api/v1/mail/verifySignupToken/${signUptoken}`;
 
   sendMail(email, "From Travel Monk", verificationUrl)
     .then(() => {
       return res.status(200).json({
         success: true,
-        message:
-          "Mail sent successfully. Please check your email, including the spam or junk folder and follow the instructions to verify your email address and finish setting up your account.",
+        message: "Mail sent successfully.",
       });
     })
     .catch((error) => {
@@ -76,20 +74,20 @@ export const login = asyncHandler(async (req, res, next) => {
   const isValidPassword = await existingUser.isPasswordCorrect(password);
 
   if (!isValidPassword)
-    return next(new ApiErrorResponse("Wrong password!!", 400));
+    return next(new ApiErrorResponse("Wrong password", 400));
 
-  const refresh_token = existingUser.generateRefreshToken();
   const access_token = existingUser.generateAccessToken();
+  const refresh_token = existingUser.generateRefreshToken();
 
   existingUser.refreshToken = refresh_token;
   await existingUser.save({ validateBeforeSave: false });
 
   res
-    .cookie("access_token", refresh_token, {
+    .cookie("access_token", access_token, {
       ...COOKIE_OPTIONS,
       expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
     })
-    .cookie("refresh_token", access_token, {
+    .cookie("refresh_token", refresh_token, {
       ...COOKIE_OPTIONS,
       expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
     })

@@ -6,7 +6,6 @@ import morgan from "morgan";
 import cors from "cors";
 import { connectToMongoDB } from "./src/configs/db/connectToMongoDB.js";
 import authRoutes from "./src/routes/auth/authRoutes.js";
-import mailRoutes from "./src/routes/mail/mailRoutes.js";
 import userRoutes from "./src/routes/user/userRoutes.js";
 dotenv.config();
 const app = express();
@@ -27,11 +26,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(cookieParser());
 app.use(morgan("dev"));
-
+  
 // Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/user", userRoutes);
-// app.use("/api/v1/mail", mailRoutes);
+
 
 connectToMongoDB()
   .then(() => {

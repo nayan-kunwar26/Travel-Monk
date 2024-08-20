@@ -1,4 +1,4 @@
-export const DB_NAME = "Travel_Monk_NK";
+export const DB_NAME = "Travel_Monk";
 
 export const COOKIE_OPTIONS = {
   httpOnly: true,
